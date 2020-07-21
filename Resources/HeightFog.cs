@@ -6,9 +6,10 @@ using UnityEngine.Rendering.PostProcessing;
 
 [System.Serializable]
 [PostProcess(typeof(HeightFogRenderer), PostProcessEvent.AfterStack, "Custom/Height Fog")]
-public class HeightFogSettings : PostProcessEffectSettings
+public class HeightFog : PostProcessEffectSettings
 {
     [ColorUsage(false, true)]
+    [Header("Hight fog")]
     public ColorParameter FogColor = new ColorParameter { value = Color.white };
     [UnityEngine.Rendering.PostProcessing.Min(0)]
     public FloatParameter FogDensity = new FloatParameter { value = 6f };
@@ -17,21 +18,24 @@ public class HeightFogSettings : PostProcessEffectSettings
     public FloatParameter MinFogHeight = new FloatParameter { value = 10f };
 
     [UnityEngine.Rendering.PostProcessing.Min(0)]
-    public FloatParameter MaxFogHeight = new FloatParameter { value = 10000f };
+    public FloatParameter MaxFogHeight = new FloatParameter { value = 200f };
 
+    [Header("Distance fog")]
+    [UnityEngine.Rendering.PostProcessing.Min(0)]
+    public FloatParameter DistanceDensity = new FloatParameter { value = 0.01f };
+
+    [Header("Skybox parameters")]
     [Range(0,1)]
     public FloatParameter SkyFill = new FloatParameter { value = .5f };
     [UnityEngine.Rendering.PostProcessing.Min(0)]
     public FloatParameter SkyFogDensity = new FloatParameter { value = 6f };
 
-    [UnityEngine.Rendering.PostProcessing.Min(0)]
-    public FloatParameter DistanceDensity = new FloatParameter { value = 0.01f };
-
+    [Header("Noise")]
     public Vector3Parameter WindDirection = new Vector3Parameter { value = Vector3.zero };
-
     [Range(0, 1)]
     public FloatParameter WindInfluence = new FloatParameter { value = .15f };
 
+    [Header("Lighting")]
     public BoolParameter LightColoring = new BoolParameter();
     [ColorUsage(false, true)]
     public ColorParameter DirectionalLightColorBlender = new ColorParameter { value = Color.white };
@@ -40,7 +44,7 @@ public class HeightFogSettings : PostProcessEffectSettings
     public FloatParameter LightFarness = new FloatParameter { value = 1 };
 }
 
-public class HeightFogRenderer : PostProcessEffectRenderer<HeightFogSettings>
+public class HeightFogRenderer : PostProcessEffectRenderer<HeightFog>
 {
     static readonly int inverseView = Shader.PropertyToID("HF_InverseView");
     static readonly int minHeight = Shader.PropertyToID("HF_MinHeight");
@@ -77,6 +81,7 @@ public class HeightFogRenderer : PostProcessEffectRenderer<HeightFogSettings>
         {
             Shader.DisableKeyword("HF_LIGHT_ATTEN");
             context.command.BlitFullscreenTriangle(context.source, context.destination, sheet, 0);
+
             return;
         }
 
