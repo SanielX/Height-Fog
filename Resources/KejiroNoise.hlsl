@@ -22,11 +22,6 @@
 	// https://github.com/ashima/webgl-noise
 	//
 
-	float3 mod(float3 x, float3 y)
-	{
-		return x - y * floor(x / y);
-	}
-
 	float3 mod289(float3 x)
 	{
 		return x - floor(x / 289.0) * 289.0;

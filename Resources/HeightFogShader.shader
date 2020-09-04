@@ -3,12 +3,13 @@
 	HLSLINCLUDE
 
 	#include "Packages/com.unity.postprocessing/PostProcessing/Shaders/StdLib.hlsl"
-	#pragma multi_compile HF_LIGHT_ATTEN
-	#include "KejiroNoise.hlsl"
 	#include "HeightFogUsage.hlsl"
 
 	TEXTURE2D_SAMPLER2D(_CameraDepthTexture, sampler_CameraDepthTexture);
 	TEXTURE2D_SAMPLER2D(_MainTex, sampler_MainTex);
+
+	float4x4 HF_InverseView;
+	float4x4 unity_CameraInvProjection;
 
 	struct Varyings
 	{
@@ -73,8 +74,16 @@
 		float4 mainTex = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.texcoord);
 		float mask;
 		float3 vpos = ComputeViewSpacePosition(i, mask);
-		
-		mainTex.rgb = lerp(ApplyFogSkybox(mainTex.rgb, vpos), ApplyFog(mainTex.rgb, vpos), mask);
+		float3 wpos = mul(HF_InverseView, float4(vpos, 1)).xyz;
+
+		if(mask > 0)
+		{
+			mainTex.rgb = ApplyFog(mainTex.rgb, wpos);
+		} 
+		else 
+		{
+			mainTex.rgb = ApplyFogSkybox(mainTex.rgb, wpos);
+		}
 		
 		return mainTex;
 	}
@@ -89,6 +98,7 @@
 		{
 			HLSLPROGRAM
 
+			#pragma multi_compile HF_LIGHT_ATTEN
 			#pragma vertex Vertex
 			#pragma fragment Frag
 

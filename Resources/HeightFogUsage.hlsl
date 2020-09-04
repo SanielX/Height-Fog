@@ -1,19 +1,34 @@
-float HF_DistanceDensity;
-float HF_FogDensity;
-float HF_LightFarness;
-float HF_MaxHeight;
-float HF_MinHeight;
-float HF_SkyFill;
-float HF_SkyFogDensity;
-float HF_WindInfluence;
-float3 HF_DirectionalLightColor;
-float3 HF_DirectionalLightVector;
-float3 HF_WindDirection;
-float4 HF_DirectionalLightColorBlend;
-float4 HF_FogColor;
+#ifndef PI
+#define PI 3.14159
+#endif
 
-float4x4 HF_InverseView;
-float4x4 unity_CameraInvProjection;
+#ifndef FLT_MAX
+#define FLT_MAX 3.402823466e+38
+#endif
+
+#include "KejiroNoise.hlsl"
+
+half4 HF_FogColor;
+
+half HF_FogDensity;
+half HF_MaxHeight;
+half HF_MinHeight;
+
+half HF_DistanceDensity;
+half HF_FogDistanceMax;
+half HF_FogDistanceMin;
+
+half HF_SkyFill;
+half HF_SkyFogDensity;
+
+half HF_WindInfluence;
+half3 HF_WindDirection;
+
+half3 HF_DirectionalLightColor;
+float3 HF_DirectionalLightVector;
+half4 HF_DirectionalLightColorBlend;
+half HF_LightFarness;
+half HF_LightInfluence;
 
 float LiniarInterpolation(float minValue, float maxValue, float value)
 {
@@ -37,21 +52,24 @@ float3 GetDefaultFogColor()
 
 float3 ApplyLight(float3 fogColor, float3 wpos){
     float3 camToPoint = normalize(wpos - (_WorldSpaceCameraPos - HF_DirectionalLightVector * 100 * HF_LightFarness));
+
     float lightAmount = 1.0 - smooth(saturate(dot(HF_DirectionalLightVector, camToPoint)));
+    lightAmount *= HF_LightInfluence;
     
-    float3 lightColor = (HF_DirectionalLightColor.rgb * HF_DirectionalLightColorBlend.rgb) * HF_DirectionalLightColorBlend.a;
+    float3 lightColor = (HF_DirectionalLightColor * HF_DirectionalLightColorBlend) * HF_DirectionalLightColorBlend.a;
+
     return lerp(fogColor, lightColor, lightAmount);
 }
 
-float3 ApplyFog(float3 color, float3 vpos)
+float3 ApplyFog(float3 color, float3 wpos)
 {
-    float3 wpos = mul(HF_InverseView, float4(vpos, 1)).xyz;
-
     float distanceAmount = LiniarInterpolation(HF_MinHeight, HF_MaxHeight, wpos.y);
     distanceAmount = exponent(distanceAmount * HF_FogDensity);
 
     // Distance fog uses just default Exponential Squared like in unity
     float distanceToPixel = distance(_WorldSpaceCameraPos, wpos);
+    distanceToPixel = LiniarInterpolation(HF_FogDistanceMin, HF_FogDistanceMax, distanceToPixel);
+
     float fadeAmount = 1.0 - exponent(distanceToPixel * HF_DistanceDensity);
 
     float finalFog = fadeAmount * distanceAmount;
@@ -72,12 +90,10 @@ float3 ApplyFog(float3 color, float3 vpos)
     return lerp(color, finalFogColor, finalFog);
 }
 
-float3 ApplyFogSkybox(float3 color, float3 vpos)
+float3 ApplyFogSkybox(float3 color, float3 wpos)
 {
     if(HF_SkyFill <= 0)
     return color;
-
-    float3 wpos = mul(HF_InverseView, float4(vpos, 1)).xyz;
 
     float k = HF_SkyFill;
     k = 1.0 - pow(abs(sin(PI * (k-1) / 2.0)), .2);
@@ -88,6 +104,8 @@ float3 ApplyFogSkybox(float3 color, float3 vpos)
 
     float finalFog = distanceAmount;
     float3 finalFogColor = GetDefaultFogColor();
+
+   // float3 w = _WorldSpaceLightPos0;
 
     #if HF_LIGHT_ATTEN
         finalFogColor.rgb = ApplyLight(finalFogColor, wpos);
