@@ -80,6 +80,10 @@ namespace HostGame.HeightFog
         static readonly int fogDistanceMax = Shader.PropertyToID("HF_FogDistanceMax");
         static readonly int fogDistanceMin = Shader.PropertyToID("HF_FogDistanceMin");
 
+        public override void Init()
+        {
+            Shader.EnableKeyword("HF_FOG_ENABLED");
+        }
         public override void Render(PostProcessRenderContext context)
         {
             var sheet = context.propertySheets.Get(Shader.Find("Hidden/Custom/Height Fog"));
@@ -107,6 +111,8 @@ namespace HostGame.HeightFog
             }
 
             Shader.EnableKeyword("HF_LIGHT_ATTEN");
+            Shader.DisableKeyword("HF_FOG_ENABLED");
+
             Shader.SetGlobalColor(directionalLightColor, sun.color);
             Shader.SetGlobalColor(directionalLightColorBlend, settings.DirectionalLightColorBlender);
             var sunTransform = sun.transform;
@@ -115,6 +121,12 @@ namespace HostGame.HeightFog
             Shader.SetGlobalFloat(lightInfluence, settings.LightInfluence);
 
             context.command.BlitFullscreenTriangle(context.source, context.destination, sheet, 0);
+        }
+
+        public override void Release()
+        {
+            Shader.DisableKeyword("HF_FOG_ENABLED");
+            Shader.DisableKeyword("HF_LIGHT_ATTEN");
         }
     }
 }

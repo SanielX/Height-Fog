@@ -98,7 +98,7 @@
 		{
 			HLSLPROGRAM
 
-			#pragma multi_compile HF_LIGHT_ATTEN
+			#pragma shader_feature HF_LIGHT_ATTEN
 			#pragma vertex Vertex
 			#pragma fragment Frag
 

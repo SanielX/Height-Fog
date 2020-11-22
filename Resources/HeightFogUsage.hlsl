@@ -1,9 +1,9 @@
 #ifndef PI
-#define PI 3.14159
+    #define PI 3.14159
 #endif
 
 #ifndef FLT_MAX
-#define FLT_MAX 3.402823466e+38
+    #define FLT_MAX 3.402823466e+38
 #endif
 
 #include "KejiroNoise.hlsl"
@@ -51,9 +51,11 @@ float3 GetDefaultFogColor()
 }
 
 float3 ApplyLight(float3 fogColor, float3 wpos){
+    
     float3 camToPoint = normalize(wpos - (_WorldSpaceCameraPos - HF_DirectionalLightVector * 100 * HF_LightFarness));
 
-    float lightAmount = 1.0 - smooth(saturate(dot(HF_DirectionalLightVector, camToPoint)));
+    float d = dot(HF_DirectionalLightVector, camToPoint);
+    float lightAmount = 1.0 - smooth(saturate(d));
     lightAmount *= HF_LightInfluence;
     
     float3 lightColor = (HF_DirectionalLightColor * HF_DirectionalLightColorBlend) * HF_DirectionalLightColorBlend.a;
@@ -61,33 +63,37 @@ float3 ApplyLight(float3 fogColor, float3 wpos){
     return lerp(fogColor, lightColor, lightAmount);
 }
 
+// Paints color into fog color, if fog disabled - returns original color
 float3 ApplyFog(float3 color, float3 wpos)
 {
-    float distanceAmount = LiniarInterpolation(HF_MinHeight, HF_MaxHeight, wpos.y);
-    distanceAmount = exponent(distanceAmount * HF_FogDensity);
+    #if HF_FOG_ENABLED || HF_LIGHT_ATTEN
+        return color;
+    #else 
+        float distanceAmount = LiniarInterpolation(HF_MinHeight, HF_MaxHeight, wpos.y);
+        distanceAmount = exponent(distanceAmount * HF_FogDensity);
 
-    // Distance fog uses just default Exponential Squared like in unity
-    float distanceToPixel = distance(_WorldSpaceCameraPos, wpos);
-    distanceToPixel = LiniarInterpolation(HF_FogDistanceMin, HF_FogDistanceMax, distanceToPixel);
+        if(HF_WindInfluence > 0)
+        {
+            float3 noisePos = (wpos * 0.1) + (HF_WindDirection * _Time.yyy);
+            float n = (noise(noisePos) + 1) * HF_WindInfluence;
+            distanceAmount += n;
+        }
 
-    float fadeAmount = 1.0 - exponent(distanceToPixel * HF_DistanceDensity);
+        // Distance fog uses just default Exponential Squared like in unity
+        float distanceToPixel = distance(_WorldSpaceCameraPos, wpos);
+        distanceToPixel = LiniarInterpolation(HF_FogDistanceMin, HF_FogDistanceMax, distanceToPixel);
 
-    float finalFog = fadeAmount * distanceAmount;
-    float3 finalFogColor = GetDefaultFogColor();
+        float fadeAmount = 1.0 - exponent(distanceToPixel * HF_DistanceDensity);
 
-    if(HF_WindInfluence > 0)
-    {
-        float3 noisePos = (wpos * 0.1) + (HF_WindDirection * _Time.yyy);
-        float n = (noise(noisePos) + 1) * HF_WindInfluence;
-        finalFog += n;
-        finalFog = saturate(finalFog);
-    }
+        float finalFog = saturate(fadeAmount * distanceAmount);
+        float3 finalFogColor = GetDefaultFogColor();
 
-    #if HF_LIGHT_ATTEN
-        finalFogColor.rgb = ApplyLight(finalFogColor, wpos);
+        #if HF_LIGHT_ATTEN
+            finalFogColor.rgb = ApplyLight(finalFogColor, wpos);
+        #endif
+
+        return lerp(color, finalFogColor, finalFog);
     #endif
-
-    return lerp(color, finalFogColor, finalFog);
 }
 
 float3 ApplyFogSkybox(float3 color, float3 wpos)
@@ -105,7 +111,7 @@ float3 ApplyFogSkybox(float3 color, float3 wpos)
     float finalFog = distanceAmount;
     float3 finalFogColor = GetDefaultFogColor();
 
-   // float3 w = _WorldSpaceLightPos0;
+    // float3 w = _WorldSpaceLightPos0;
 
     #if HF_LIGHT_ATTEN
         finalFogColor.rgb = ApplyLight(finalFogColor, wpos);

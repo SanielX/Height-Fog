@@ -11,7 +11,7 @@ To enable support in custom shaders you need to include "HeightFogUsage.hlsl" an
 ```c
 //...
 #include "HeightFogUsage.hlsl"
-#pragma multi_compile HF_LIGHT_ATTEN // Add this to use directional light if enabled
+#pragma multi_compile _ HF_FOG_ENABLED HF_LIGHT_ATTEN
 //...
 struct v2f
 {
@@ -31,6 +31,7 @@ v2f vert (appdata v)
 fixed4 frag (v2f i) : SV_Target
 {
     fixed4 col = tex2D(_MainTex, i.uv);
+    // This won't change color if fog isn't enabled
     col.rgb = ApplyFog(col.rgb, i.wpos);
 
     return col;
@@ -39,4 +40,4 @@ fixed4 frag (v2f i) : SV_Target
 ```
 You can also try to use this function in surface shaders in "Finilize Color" function. Though I did not test it
 
-Thanks [this](https://github.com/keijiro/DepthInverseProjection/blob/master/Assets/InverseProjection/Resources/InverseProjection.shader) repository for inverse projection code Xd
+Thanks [this](https://github.com/keijiro/DepthInverseProjection/blob/master/Assets/InverseProjection/Resources/InverseProjection.shader) repository for inverse projection code 
