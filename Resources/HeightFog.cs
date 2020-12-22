@@ -104,6 +104,7 @@ namespace HostGame.HeightFog
             var sun = RenderSettings.sun;
             if (!sun || !settings.LightColoring)
             {
+                Shader.EnableKeyword("HF_FOG_ENABLED");
                 Shader.DisableKeyword("HF_LIGHT_ATTEN");
                 context.command.BlitFullscreenTriangle(context.source, context.destination, sheet, 0);
 

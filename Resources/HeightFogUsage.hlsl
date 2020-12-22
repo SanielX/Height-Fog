@@ -66,7 +66,7 @@ float3 ApplyLight(float3 fogColor, float3 wpos){
 // Paints color into fog color, if fog disabled - returns original color
 float3 ApplyFog(float3 color, float3 wpos)
 {
-    #if HF_FOG_ENABLED || HF_LIGHT_ATTEN
+    #if !HF_LIGHT_ATTEN & !HF_FOG_ENABLED
         return color;
     #else 
         float distanceAmount = LiniarInterpolation(HF_MinHeight, HF_MaxHeight, wpos.y);

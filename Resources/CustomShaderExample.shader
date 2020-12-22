@@ -14,9 +14,8 @@
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            // make unity fog work
+            // make fog work
             #pragma multi_compile_fog
-            #pragma multi_compile _ HF_FOG_ENABLED HF_LIGHT_ATTEN
 
             #include "UnityCG.cginc"
             #include "HeightFogUsage.hlsl"
@@ -54,7 +53,7 @@
                 fixed4 col = tex2D(_MainTex, i.uv);
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
-                col.rgb = ApplyFog(col.rgb, i.wpos);  // If fog is not enabled this will just return original color
+                col.rgb = ApplyFog(col.rgb, i.wpos);
 
                 return col;
             }
