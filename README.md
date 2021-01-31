@@ -1,5 +1,5 @@
-![](./ForGit/Screenshot3.jpg)
-![](./ForGit/Screenshot2.png)
+![](./ForGit/Screenshot.jpg)
+![](./ForGit/Screenshot2.jpg)
 # Height-Fog
  Height fog implementation for Unity. Work in progress.
  This is NOT volumetric fog, it's an image effect. Right now some settings don't actually do anything
