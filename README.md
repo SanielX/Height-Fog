@@ -1,7 +1,14 @@
-![](./ForGit/Screenshot.jpg)
-![](./ForGit/Screenshot2.jpg)
+
 # Height-Fog V2
 This is NOT volumetric fog, it's an image effect. It is based on same math, but analytical and as such, doesn't have support for shadows and other effects you'd expect from volumetrics
+<details>
+<summary>Screenshots</summary>
+
+![](./~git/Screenshot_1.jpg)
+
+![](./~git/Screenshot_2.jpg)
+
+</details>
 
 # How to use
 Like any Post Processing V2 shader. Add it as effect to Post Process volume.
