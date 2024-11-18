@@ -15,6 +15,8 @@ Like any Post Processing V2 shader. Add it as effect to Post Process volume.
 
 Fog is applied only to opaque geometry by default, to support semi transparent objects you need to use "FogVolume_ApplyFog" method in "HeightFog.hlsl" file
 
+### **NOTE:** You need to enable unsafe code in project settings/assembly definition in order to compile this project
+
 ### Fragment shader version
 ```c
 #include "HeightFog.hlsl"
