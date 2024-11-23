@@ -120,9 +120,12 @@ void FogVolume_ComputeAnalyticalUniformFog(float3 origin, float3 viewDirection, 
     // Takes care of base extinction too
     float heightOpticalDepth = OpticalDepthHeightFog(extinction, FogVolume_BaseHeight, FogVolume_HeightExponents, viewDirection.y, origin.y, segmentLength);
 
-    // This part is technically nonsense because height fog part already takes depth into account, so distance is basically squared here
-    float  transmittance        = exp(-smoothOpticalDepth * heightOpticalDepth);
-    float3 scatteringIntegrated = (scattering - scattering * transmittance) / max(0.0001, extinction); // From frostbite volumetric fog talk, energy preserving scattering
+    // This is more correct than multiply but still iffy
+    float  transmittance = exp(-min(smoothOpticalDepth, heightOpticalDepth));
+
+    // From frostbite volumetric fog talk, energy preserving scattering
+    // This still works because "transmittance" part is treated as constant in an integral, so simple formula produces correct results
+    float3 scatteringIntegrated = (scattering - scattering * transmittance) / max(0.0001, extinction); 
 
     outScattering    = scatteringIntegrated; // scattering * (1-transmittance);
     outTransmittance = transmittance;
